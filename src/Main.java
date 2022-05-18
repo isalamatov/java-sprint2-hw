@@ -7,53 +7,52 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
 
+        final String PATH_TO_MONTH_REPORTS = "C:/Test/MonthReports/";
+        final String PATH_TO_YEAR_REPORTS = "C:/Test/YearReports/y.2021.csv";
+
         Scanner scanner = new Scanner(System.in);
 
-        //Initializing objects to pass first NullPointerExeption check
-        ArrayList<MonthlyReport> monthlyReportsList = null;
-        YearlyReport yearlyReport = null;
-
-        int menuOption = 0;
+        //Initializing objects to pass first NullPointerException check
+        ArrayList<MonthlyReportRecord> monthlyReport = null;
+        ArrayList<YearlyReportRecord> yearlyReport = null;
 
         //Menu mechanics realization
         while (true) {
             printMenu();
             switch (scanner.nextInt()) {
                 case 1:
-                    monthlyReportsList = scanMonthlyReports();
+                    monthlyReport = scanMonthlyReports(PATH_TO_MONTH_REPORTS);
                     break;
                 case 2:
-                    yearlyReport = scanYearlyReport();
+                    yearlyReport = scanYearlyReport(PATH_TO_YEAR_REPORTS);
                     break;
                 case 3:
                     //Checking if monthly and yearly reports are loaded from files and then comparing them
-                    if ((yearlyReport != null) && (monthlyReportsList != null))
-                        CheckingReports.checkReports(yearlyReport, monthlyReportsList);
+                    if ((yearlyReport != null) && (monthlyReport != null))
+                        CheckingReports.compareReports(CheckingReports.calculateMonthExpenses(monthlyReport), CheckingReports.calculateYearExpenses(yearlyReport));
                     else
                         System.out.println("Данные годового отчета или данные месячных отчетов не считаны");
                     break;
                 case 4:
                     //Checking if monthly reports are loaded from files and then printing all monthly reports
-                    if (monthlyReportsList != null) {
-                        for (MonthlyReport monthlyReport : monthlyReportsList
+                    if (monthlyReport != null) {
+                        for (MonthlyReportRecord record : monthlyReport
                         ) {
-                            System.out.println("Месяц : " + monthlyReport.getMonth());
-                            for (int i = 0; i < monthlyReport.getItem_name().size(); i++) {
-                                System.out.println(monthlyReport.getItem_name().get(i));
-                                System.out.println(monthlyReport.getIs_expense().get(i));
-                                System.out.println(monthlyReport.getQuantity().get(i));
-                                System.out.println(monthlyReport.getSum_of_one().get(i));
-                            }
+                            System.out.println("Месяц : " + record.getMonth());
+                            System.out.println(record.getItem_name());
+                            System.out.println(record.getIs_expense());
+                            System.out.println(record.getQuantity());
+                            System.out.println(record.getSum_of_one());
                         }
                     } else System.out.println("Данные месячных отчетов не считаны.");
                     break;
                 case 5:
                     //Checking if yearly report is loaded from file and then printing it.
                     if (yearlyReport != null) {
-                        for (int i = 0; i < yearlyReport.getMonth().size(); i++) {
-                            System.out.println(yearlyReport.getMonth().get(i));
-                            System.out.println(yearlyReport.getAmount().get(i));
-                            System.out.println(yearlyReport.getIs_expense().get(i));
+                        for (YearlyReportRecord record : yearlyReport) {
+                            System.out.println(record.getMonth());
+                            System.out.println(record.getAmount());
+                            System.out.println(record.getIs_expense());
                         }
                     } else System.out.println("Данные годового отчета не считаны.");
                     break;
@@ -77,24 +76,18 @@ public class Main {
         System.out.println("6 - Завершить работу");
         System.out.println("Выберите желаемое действие:");
     }
-    //Method to scan all *.csv files meeting certain conditions from the designated folder
-    private static ArrayList<MonthlyReport> scanMonthlyReports() throws IOException {
-        final File PATH = new File("C:/Test/MonthReports/");
 
-        ArrayList<MonthlyReport> monthlyReportsList = new ArrayList<>();
+    //Method to scan all *.csv files meeting certain conditions from the designated folder
+    private static ArrayList<MonthlyReportRecord> scanMonthlyReports(String PATH_TO_MONTH_REPORTS) throws IOException {
+        final File PATH = new File(PATH_TO_MONTH_REPORTS);
+
+        ArrayList<MonthlyReportRecord> monthlyReportsList = new ArrayList<>();
 
         //Checking if the folder is empty
         if (PATH.listFiles() != null) {
             for (File file : PATH.listFiles()
             ) {
                 if (file.isFile() && file.getName().contains("m.") && file.getName().contains(".csv")) {
-                    /*Initializing set of ArrayLists in order to clear them before parsing next file,
-                      because clearing them in explicit form (using .clear() method) causes clearing of object fields*/
-                    ArrayList<String> item_name = new ArrayList<>();
-                    ArrayList<Boolean> is_expense = new ArrayList<>();
-                    ArrayList<Integer> quantity = new ArrayList<>();
-                    ArrayList<Integer> sum_of_one = new ArrayList<>();
-
                     //Getting month name from the file name
                     Integer month = Integer.parseInt(file.getName().substring(7, 8));
 
@@ -108,14 +101,9 @@ public class Main {
                     string = bufferedReader.readLine(); //Step to skip first line
                     while (string != null) {
                         String[] values = string.split(";");
-                        item_name.add(values[0]);
-                        is_expense.add(Boolean.parseBoolean(values[1]));
-                        quantity.add(Integer.parseInt(values[2]));
-                        sum_of_one.add(Integer.parseInt(values[3]));
+                        monthlyReportsList.add(new MonthlyReportRecord(values[0], Boolean.parseBoolean(values[1]), Integer.parseInt(values[2]), Integer.parseInt(values[3]), month));
                         string = bufferedReader.readLine();
                     }
-                    MonthlyReport monthlyReport = new MonthlyReport(item_name, is_expense, quantity, sum_of_one, month);
-                    monthlyReportsList.add(monthlyReport);
                     inputStreamReader.close();
                     bufferedReader.close();
                 } else {
@@ -130,17 +118,15 @@ public class Main {
     }
 
     //Method to load data from certain file, that is designated in the explicit way
-    private static YearlyReport scanYearlyReport() throws IOException {
-        final File PATH = new File("C:/Test/YearReports/y.2021.csv");
+    private static ArrayList<YearlyReportRecord> scanYearlyReport(String PATH_TO_YEAR_REPORTS) throws IOException {
+        final File PATH = new File(PATH_TO_YEAR_REPORTS);
 
         if (!PATH.exists()) {
             System.out.println("Файл с годовым отчетом не обнаружен в рабочей директории.");
             return null;
         } else System.out.println("Загружаем годовой отчет из файла" + PATH.getAbsolutePath());
 
-        ArrayList<Integer> month = new ArrayList<>();
-        ArrayList<Integer> amount = new ArrayList<>();
-        ArrayList<Boolean> is_expense = new ArrayList<>();
+        ArrayList<YearlyReportRecord> yearlyReport = new ArrayList<>();
 
         //Encoding does not matter in this case, because file does not contain String or Char objects
         FileReader fileReader = new FileReader(PATH);
@@ -149,11 +135,10 @@ public class Main {
         string = bufferedReader.readLine();
         while (string != null) {
             String[] values = string.split(";");
-            month.add(Integer.parseInt(values[0]));
-            amount.add(Integer.parseInt(values[1]));
-            is_expense.add(Boolean.parseBoolean(values[2]));
+            yearlyReport.add(new YearlyReportRecord(Integer.parseInt(values[0]), Integer.parseInt(values[1]), Boolean.parseBoolean(values[2])));
             string = bufferedReader.readLine();
         }
-        return new YearlyReport(month, amount, is_expense);
+
+        return yearlyReport;
     }
 }
