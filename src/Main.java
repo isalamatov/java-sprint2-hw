@@ -7,8 +7,10 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
 
-        final String PATH_TO_MONTH_REPORTS = "C:/Test/MonthReports/";
-        final String PATH_TO_YEAR_REPORTS = "C:/Test/YearReports/y.2021.csv";
+        final String PATH_TO_REPORTS = "resources/";
+
+        //    final String PATH_TO_MONTH_REPORTS = System.getProperty("user.dir").replace("\\","/").concat("/resources");
+        //    final String PATH_TO_YEAR_REPORTS = System.getProperty("user.dir").replace("\\","/").concat("/resources/y.2021.csv");
 
         Scanner scanner = new Scanner(System.in);
 
@@ -21,10 +23,10 @@ public class Main {
             printMenu();
             switch (scanner.nextInt()) {
                 case 1:
-                    monthlyReport = scanMonthlyReports(PATH_TO_MONTH_REPORTS);
+                    monthlyReport = scanMonthlyReports(PATH_TO_REPORTS);
                     break;
                 case 2:
-                    yearlyReport = scanYearlyReport(PATH_TO_YEAR_REPORTS);
+                    yearlyReport = scanYearlyReport(PATH_TO_REPORTS);
                     break;
                 case 3:
                     //Checking if monthly and yearly reports are loaded from files and then comparing them
@@ -100,7 +102,7 @@ public class Main {
                     String string = bufferedReader.readLine();
                     string = bufferedReader.readLine(); //Step to skip first line
                     while (string != null) {
-                        String[] values = string.split(";");
+                        String[] values = string.split(",");
                         monthlyReportsList.add(new MonthlyReportRecord(values[0], Boolean.parseBoolean(values[1]), Integer.parseInt(values[2]), Integer.parseInt(values[3]), month));
                         string = bufferedReader.readLine();
                     }
@@ -121,24 +123,34 @@ public class Main {
     private static ArrayList<YearlyReportRecord> scanYearlyReport(String PATH_TO_YEAR_REPORTS) throws IOException {
         final File PATH = new File(PATH_TO_YEAR_REPORTS);
 
-        if (!PATH.exists()) {
-            System.out.println("Файл с годовым отчетом не обнаружен в рабочей директории.");
-            return null;
-        } else System.out.println("Загружаем годовой отчет из файла" + PATH.getAbsolutePath());
+        if (PATH.listFiles() != null) {
+            for (File file : PATH.listFiles()
+            ) {
+                if (file.isFile() && file.getName().contains("y") && file.getName().contains("csv")) {
+                    System.out.println("Загружаем годовой отчет из файла " + file.getAbsolutePath());
+                    ArrayList<YearlyReportRecord> yearlyReport = new ArrayList<>();
 
-        ArrayList<YearlyReportRecord> yearlyReport = new ArrayList<>();
+                    //Encoding does not matter in this case, because file does not contain String or Char objects
+                    FileReader fileReader = new FileReader(file);
+                    BufferedReader bufferedReader = new BufferedReader(fileReader);
+                    String string = bufferedReader.readLine();
+                    string = bufferedReader.readLine();
+                    while (string != null) {
+                        String[] values = string.split(",");
+                        yearlyReport.add(new YearlyReportRecord(Integer.parseInt(values[0]), Integer.parseInt(values[1]), Boolean.parseBoolean(values[2])));
+                        string = bufferedReader.readLine();
+                    }
 
-        //Encoding does not matter in this case, because file does not contain String or Char objects
-        FileReader fileReader = new FileReader(PATH);
-        BufferedReader bufferedReader = new BufferedReader(fileReader);
-        String string = bufferedReader.readLine();
-        string = bufferedReader.readLine();
-        while (string != null) {
-            String[] values = string.split(";");
-            yearlyReport.add(new YearlyReportRecord(Integer.parseInt(values[0]), Integer.parseInt(values[1]), Boolean.parseBoolean(values[2])));
-            string = bufferedReader.readLine();
+                    return yearlyReport;
+                } else {
+                    System.out.println("Файл " + file.getAbsolutePath() + " не является годовым отчетом");
+                }
+            }
         }
-
-        return yearlyReport;
+        else {
+            System.out.println("Папка " + PATH + " не содержит месячных отчетов");
+            return null;
+        }
+        return null;
     }
 }
