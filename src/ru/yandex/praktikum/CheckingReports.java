@@ -10,6 +10,10 @@ public class CheckingReports {
 
         //Hashmap objects to sore month's expenses and incomes data
         HashMap<Integer, Integer> expensesMonthly = new HashMap<>();
+        Integer a =1;
+        Double b = a.doubleValue();
+
+
 
         //Sort out expenses and incomes from each monthly report and save their monthly summary in HashMap table
         for (MonthlyReport report : monthlyReport) {

@@ -9,9 +9,9 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
 
-        final String PATH_TO_REPORTS = "resources/";
+        //final String PATH_TO_REPORTS = "resources/";
 
-        //    final String PATH_TO_MONTH_REPORTS = System.getProperty("user.dir").replace("\\","/").concat("/resources");
+        final String PATH_TO_REPORTS = System.getProperty("user.dir").replace("\\","/").concat("/resources");
         //    final String PATH_TO_YEAR_REPORTS = System.getProperty("user.dir").replace("\\","/").concat("/resources/y.2021.csv");
 
         Scanner scanner = new Scanner(System.in);
