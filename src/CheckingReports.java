@@ -3,7 +3,7 @@ import java.util.HashMap;
 
 public class CheckingReports {
 
-    public static HashMap<Integer, Integer> calculateMonthExpenses(ArrayList<MonthlyReportRecord> monthlyReport) {
+    public static HashMap<Integer, Integer> calculateMonthExpenses(ArrayList<MonthlyReport> monthlyReport) {
         //Variables to store summary expenses and incomes
         int sumExp = 0;
         int sumInc = 0;
@@ -12,18 +12,20 @@ public class CheckingReports {
         HashMap<Integer, Integer> expensesMonthly = new HashMap<>();
 
         //Sort out expenses and incomes from each monthly report and save their monthly summary in HashMap table
-        for (MonthlyReportRecord record : monthlyReport) {
-            if (record.getIs_expense()) {
-                expensesMonthly.put(record.getMonth(), sumExp += record.getSum_of_one() * record.getQuantity());
-            } else {
-                expensesMonthly.put(-record.getMonth(), sumInc += record.getSum_of_one() * record.getQuantity());
+        for (MonthlyReport report : monthlyReport) {
+            for (MonthlyReportRecord record : report.getMonthlyReportRecords()
+            ) {
+                if (record.getIs_expense()) {
+                    expensesMonthly.put(report.getMonth(), sumExp += record.getSum_of_one() * record.getQuantity());
+                } else {
+                    expensesMonthly.put(-report.getMonth(), sumInc += record.getSum_of_one() * record.getQuantity());
+                }
             }
-
         }
         return expensesMonthly;
     }
 
-    public static HashMap<Integer, Integer> calculateYearExpenses(ArrayList<YearlyReportRecord> yearlyReport) {
+    public static HashMap<Integer, Integer> calculateYearExpenses(YearlyReport yearlyReport) {
         //Variables to store summary expenses and incomes
         Integer sumExp = 0;
         Integer sumInc = 0;
@@ -32,7 +34,7 @@ public class CheckingReports {
         HashMap<Integer, Integer> expensesYearly = new HashMap<>();
 
         //Sort out expenses and incomes from yearly report and save their monthly summary in HashMap table
-        for (YearlyReportRecord record : yearlyReport) {
+        for (YearlyReportRecord record : yearlyReport.getYearlyReportRecords()) {
             if (record.getIs_expense()) {
                 expensesYearly.put(record.getMonth(), (sumExp += record.getAmount()));
             } else {
